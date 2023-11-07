@@ -1,0 +1,35 @@
+.box {
+    border: 1px solid black;
+    padding: 20px;
+}
+
+body {
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+.forum-posts {
+    list-style: none;
+    padding-left: 0;
+}
+
+.forum-list-item {
+    border: 1px solid black;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.forum-post {
+    display: flex;
+}
+
+.forum-image {
+    max-width: 100%;
+    margin-right: 20px;
+}
+.forum-image img{
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    width: 100%;
+    width: 300px;
+}
