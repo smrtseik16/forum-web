@@ -33,3 +33,7 @@ body {
     width: 100%;
     width: 300px;
 }
+.forum-comment-timeago {
+    color: gray;
+    font-size: 12px;
+}

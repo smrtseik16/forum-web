@@ -32,6 +32,7 @@ class Post {
                     formElements.forumEntries.innerHTML = null;
 
                     for (let i = 0; i < posts.length; i++) {
+                        var date = Date.parse(posts[i].date_created);
                         formElements.forumEntries.innerHTML += 
                         `<li class="forum-list-item">
                             <div class="forum-post">
@@ -40,6 +41,8 @@ class Post {
                                 </div>
                                 <div class="forum-text">
                                     <strong>${posts[i].name}</strong> 
+                                    <br/>
+                                    <p>${posts[i].date_created}</p>
                                     <br/>
                                     <p>${posts[i].description}</p> 
                                 </div>
@@ -67,6 +70,13 @@ class Post {
         );
     }
 
+    clearForm() {
+        var formElements = refreshElements();
+        formElements.formName.value = '';
+        formElements.formDescription.value = '';
+        formElements.formFile.value = '';
+    }
+
     addPost(e, formElements) {
         e.preventDefault();
         
@@ -79,9 +89,11 @@ class Post {
             method: 'POST',
             body: formData,
         })
-       .then(response => response.json())
-       .then(response => console.log(JSON.stringify(response)))
-       .then(setTimeout(() => this.getAll(refreshElements(), _comment), 3000));
+        .then(response => response.json())
+        .then(response => {
+            this.clearForm(); 
+            this.getAll(refreshElements(), _comment);
+        });
     }
 }
 
@@ -101,10 +113,11 @@ class Comment {
 
                 if(comments.length > 0) {
                     let commentSection = document.getElementById(`forum-comments-${postId}`);
+                    commentSection.innerHTML = '';
 
                     for (let i = 0; i < comments.length; i++) {
                         commentSection.innerHTML += `<li class="forum-comment-item">
-                            <strong>${comments[i].name}:</strong> ${comments[i].comment}
+                            <strong>${comments[i].name}:</strong> ${comments[i].comment} <span class="forum-comment-timeago">(${moment(Date.parse(comments[i].date_created)).fromNow()})</span>
                         </li>`
                     }
                 }
@@ -113,6 +126,11 @@ class Comment {
                 console.log('no comments available.');
             })
         );
+    }
+
+    clearForm(postId) {
+        let commentBox = document.getElementById(`forum-comment-box-text-${postId}`);
+        commentBox.value = '';
     }
 
     addCommentEvent() {
@@ -138,9 +156,11 @@ class Comment {
             method: 'POST',
             body: formData
         })
-       .then(response => response.json())
-       .then(response => console.log(JSON.stringify(response)))
-       .then(setTimeout(() => this.getAllComments(postId), 3000));
+        .then(response => response.json())
+        .then(response => {
+            this.clearForm(postId);
+            this.getAllComments(postId);
+        });
 
     }
 }
