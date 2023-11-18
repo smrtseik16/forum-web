@@ -1,6 +1,8 @@
 var _post; 
 var _comment;
-const commentUser = 'anonymous'
+const commentUser = 'anonymous';
+const apiDomain = 'https://forum-api-5eb78.web.app';
+const localApiDomain = 'http://127.0.0.1:3000';
 
 window.addEventListener('load', () => {
     const formElements = refreshElements();
@@ -20,54 +22,69 @@ class Post {
     }
 
     getAll(formElements) {
-        fetch('http://127.0.0.1:3000/post')
-            .then(response => response.json().then(data => ({
-                data: data,
-                status: response.status
-            }))
-            .then(res => {
-                let posts = res.data;
+        try {
+            fetch(`${apiDomain}/post`)
+                .then(response => response.json().then(data => ({
+                    data: data,
+                    status: response.status
+                }))
+                .then(res => {
+                    let posts = res.data;
 
-                if(posts.length > 0) {
-                    formElements.forumEntries.innerHTML = null;
+                    if(posts.length > 0) {
+                        formElements.forumEntries.innerHTML = null;
 
-                    for (let i = 0; i < posts.length; i++) {
-                        var date = Date.parse(posts[i].date_created);
-                        formElements.forumEntries.innerHTML += 
-                        `<li class="forum-list-item">
-                            <div class="forum-post">
-                                <div class="forum-image">
-                                    <img src="${posts[i].image_url}" alt="forum image"/>
+                        for (let i = 0; i < posts.length; i++) {
+                            var date = Date.parse(posts[i].date_created);
+                            formElements.forumEntries.innerHTML += 
+                            `<li class="forum-list-item">
+                                <div class="forum-post">
+                                    <div class="forum-image">
+                                        <img src="${posts[i].image_url}" alt="forum image"/>
+                                    </div>
+                                    <div class="forum-text">
+                                        <strong>${posts[i].name}</strong> 
+                                        <br/>
+                                        <p>${posts[i].date_created}</p>
+                                        <br/>
+                                        <p>${posts[i].description}</p> 
+                                    </div>
                                 </div>
-                                <div class="forum-text">
-                                    <strong>${posts[i].name}</strong> 
-                                    <br/>
-                                    <p>${posts[i].date_created}</p>
-                                    <br/>
-                                    <p>${posts[i].description}</p> 
+                                <hr/>
+                                <h3>Comments</h3>
+                                <ul id="forum-comments-${posts[i].id}">
+                                </ul>
+                                <hr/>
+                                <div class="forum-comment-box">
+                                    <textarea id="forum-comment-box-text-${posts[i].id}" name="message" placeholder="Add a comment." style="width: 70%;"></textarea><br/>
+                                    <input aria-post-id="${posts[i].id}" class="forum-comment-box-button" type="submit" value="Add comment"/>
                                 </div>
-                            </div>
-                            <hr/>
-                            <h3>Comments</h3>
-                            <ul id="forum-comments-${posts[i].id}">
-                            </ul>
-                            <hr/>
-                            <div class="forum-comment-box">
-                                <textarea id="forum-comment-box-text-${posts[i].id}" name="message" placeholder="Add a comment." style="width: 70%;"></textarea><br/>
-                                <input aria-post-id="${posts[i].id}" class="forum-comment-box-button" type="submit" value="Add comment"/>
-                            </div>
-                        </li>`;
+                            </li>`;
 
-                        _comment.getAllComments(posts[i].id);
+                            _comment.getAllComments(posts[i].id);
+                        }
+                        _comment.addCommentEvent();
                     }
-                }
-                _comment.addCommentEvent();
-            })
-            .catch(error => {
-                _comment.addCommentEvent();
-                console.log('no posts available.');
-            })
-        );
+                    else {
+                        formElements.forumEntries.innerHTML += 
+                            `<li class="forum-list-item">
+                                <p>No available posts.</p>
+                            </li>`;
+                    }
+                })
+                .catch(error => {
+                    _comment.addCommentEvent();
+                    console.log('no posts available.');
+                })
+            );
+        }
+        catch(error) {
+            formElements.forumEntries.innerHTML = 
+                `<li class="forum-list-item">
+                    <p>Error getting posts.</p>
+                </li>`;
+        }
+        
     }
 
     clearForm() {
@@ -85,7 +102,7 @@ class Post {
         formData.append('description', formElements.formDescription.value);
         formData.append('file', formElements.formFile.files[0]);
 
-        fetch('http://127.0.0.1:3000/post/create', {
+        fetch(`${apiDomain}/post/create`, {
             method: 'POST',
             body: formData,
         })
@@ -103,7 +120,7 @@ class Comment {
     }
 
     getAllComments(postId) {
-        fetch(`http://127.0.0.1:3000/comment/${postId}`)
+        fetch(`${apiDomain}/comment/${postId}`)
             .then(response => response.json().then(data => ({
                 data: data,
                 status: response.status
@@ -152,7 +169,7 @@ class Comment {
         formData.append('comment', textValue);
         formData.append('post_id', postId);
 
-        fetch('http://localhost:3000/comment/create', {
+        fetch(`${apiDomain}/comment/create`, {
             method: 'POST',
             body: formData
         })
