@@ -1,14 +1,16 @@
-var _post; 
-var _comment;
+var _post,
+    _comment,
+    _loader; 
 const commentUser = 'anonymous';
-const apiDomain = 'https://forum-api-5eb78.web.app';
-const localApiDomain = 'http://127.0.0.1:3000';
+var apiDomain = 'https://forum-api-5eb78.web.app',
+    localApiDomain = 'http://127.0.0.1:3000';
 
 window.addEventListener('load', () => {
     const formElements = refreshElements();
 
     _post = new Post();
     _comment = new Comment();
+    _loader = new Loader();
 
     _post.getAll(formElements, _comment);
 
@@ -23,6 +25,7 @@ class Post {
 
     getAll(formElements) {
         try {
+            _loader.showLoader();
             fetch(`${apiDomain}/post`)
                 .then(response => response.json().then(data => ({
                     data: data,
@@ -71,10 +74,13 @@ class Post {
                                 <p>No available posts.</p>
                             </li>`;
                     }
+
+                    _loader.hideLoader();
                 })
                 .catch(error => {
                     _comment.addCommentEvent();
                     console.log('no posts available.');
+                    _loader.hideLoader();
                 })
             );
         }
@@ -102,6 +108,7 @@ class Post {
         formData.append('description', formElements.formDescription.value);
         formData.append('file', formElements.formFile.files[0]);
 
+        _loader.showLoader();
         fetch(`${apiDomain}/post/create`, {
             method: 'POST',
             body: formData,
@@ -110,6 +117,7 @@ class Post {
         .then(response => {
             this.clearForm(); 
             this.getAll(refreshElements(), _comment);
+            _loader.hideLoader();
         });
     }
 }
@@ -138,9 +146,12 @@ class Comment {
                         </li>`
                     }
                 }
+                
+                _loader.hideLoader();
             })
             .catch(error => {
                 console.log('no comments available.');
+                _loader.hideLoader();
             })
         );
     }
@@ -169,6 +180,7 @@ class Comment {
         formData.append('comment', textValue);
         formData.append('post_id', postId);
 
+        _loader.showLoader();
         fetch(`${apiDomain}/comment/create`, {
             method: 'POST',
             body: formData
@@ -179,6 +191,24 @@ class Comment {
             this.getAllComments(postId);
         });
 
+    }
+}
+
+class Loader {
+    constructor() {
+        this.loader = document.getElementById('forum-loader');
+    }
+
+    showLoader() {
+        if(this.loader.classList.contains('hidden')) {
+            this.loader.classList.remove('hidden');
+        }
+    }
+
+    hideLoader() {
+        if(!this.loader.classList.contains('hidden')) {
+            this.loader.classList.add('hidden');
+        }
     }
 }
 
